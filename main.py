@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time
 from ui.mapa import Mapa
 # Removed import of TecladoVirtual
 from ui.widgets import HUD
