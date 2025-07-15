@@ -48,3 +48,11 @@ def obter_fazenda():
     if row:
         return {'nome': row[0], 'largura_implemento': row[1]}
     return None
+
+def obter_pontos():
+    conn = sqlite3.connect('pulverizacao.db')
+    cur = conn.cursor()
+    cur.execute('SELECT latitude, longitude FROM pontos ORDER BY timestamp ASC')
+    rows = cur.fetchall()
+    conn.close()
+    return rows

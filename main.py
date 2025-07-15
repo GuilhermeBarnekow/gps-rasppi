@@ -26,11 +26,8 @@ def main():
     largura = None
     nome_fazenda = None
 
-    if fazenda:
-        nome_fazenda = fazenda['nome']
-        largura = fazenda['largura_implemento']
-    else:
-        # Solicitar entrada do usuário para nome da fazenda e largura do implemento
+    # Forçar entrada dos dados da fazenda se não estiverem completos
+    if not fazenda or not fazenda.get('nome') or not fazenda.get('largura_implemento'):
         import tkinter as tk
         from tkinter import simpledialog
 
@@ -49,10 +46,14 @@ def main():
 
         if nome_fazenda and largura:
             db.salvar_fazenda(nome_fazenda, largura)
+            fazenda = {'nome': nome_fazenda, 'largura_implemento': largura}
         else:
             print("Informações da fazenda inválidas. Encerrando.")
             pygame.quit()
             sys.exit()
+    else:
+        nome_fazenda = fazenda['nome']
+        largura = fazenda['largura_implemento']
 
     # Detectar porta do GPS
     porta_gps = detectar_porta_gps()
@@ -78,12 +79,23 @@ def main():
     pontos = []
     area_acumulada = 0.0
 
+    # Carregar pontos salvos do banco e adicionar ao mapa
+    pontos_salvos = db.obter_pontos()
+    for lat, lon in pontos_salvos:
+        pontos.append((lat, lon))
+    
+    # Adicionar pontos ao mapa
+    for ponto in pontos:
+        mapa.add_point(ponto)
+
     # Ativar rota automaticamente se GPS conectado e largura definida
     status_gnss = gnss_manager.obter_status()
     if status_gnss['conectado'] and largura is not None:
         rota_ativa = True
         velocimetro.reset()
         hud.btn_iniciar.set_active(True)
+        hud.tempo_inicio = time.time()
+        hud.tempo_pausado = 0
 
     running = True
     while running:
@@ -117,6 +129,11 @@ def main():
                     rota_ativa = hud_eventos['iniciar_rota']
                     if rota_ativa:
                         velocimetro.reset()
+                        hud.tempo_inicio = time.time()
+                        hud.tempo_pausado = 0
+                    else:
+                        hud.tempo_pausado = time.time() - hud.tempo_inicio
+                        hud.tempo_inicio = None
                         
             if 'exportar' in hud_eventos:
                 try:
@@ -132,6 +149,8 @@ def main():
                     area_acumulada = 0.0
                     mapa.limpar_trilha()
                     velocimetro.reset()
+                    hud.tempo_inicio = None
+                    hud.tempo_pausado = 0
                     print("Dados limpos")
                 except Exception as e:
                     print(f"Erro ao limpar: {e}")
