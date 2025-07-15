@@ -10,6 +10,7 @@ from utils.haversine import haversine
 from utils.velocimetro import Velocimetro
 from utils.exportacao import ExportadorDados
 import db
+from utils.detect_gps_port import detectar_porta_gps
 
 def main():
     pygame.init()
@@ -53,8 +54,16 @@ def main():
             pygame.quit()
             sys.exit()
 
+    # Detectar porta do GPS
+    porta_gps = detectar_porta_gps()
+    if porta_gps is None:
+        print("GPS não detectado. Usando porta padrão /dev/serial0")
+        porta_gps = '/dev/serial0'
+    else:
+        print(f"GPS detectado na porta: {porta_gps}")
+
     # Sistemas principais
-    gnss_manager = GNSSManager(baudrate=115200)
+    gnss_manager = GNSSManager(porta=porta_gps, baudrate=115200)
     velocimetro = Velocimetro()
     exportador = ExportadorDados()
     
@@ -68,6 +77,13 @@ def main():
     rota_ativa = False
     pontos = []
     area_acumulada = 0.0
+
+    # Ativar rota automaticamente se GPS conectado e largura definida
+    status_gnss = gnss_manager.obter_status()
+    if status_gnss['conectado'] and largura is not None:
+        rota_ativa = True
+        velocimetro.reset()
+        hud.btn_iniciar.set_active(True)
 
     running = True
     while running:

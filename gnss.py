@@ -4,7 +4,7 @@ import time
 from collections import deque
 
 class GNSSManager:
-    def __init__(self, porta='/dev/serial0', baudrate=9600):
+    def __init__(self, porta='/dev/serial0', baudrate=115200):
         self.porta = porta
         self.baudrate = baudrate
         self.serial_connection = None
