@@ -35,9 +35,11 @@ def main():
 
         root = tk.Tk()
         root.withdraw()  # Ocultar janela principal
+        root.attributes('-topmost', True)  # Tentar colocar a janela no topo
+        root.focus_force()  # Forçar foco na janela
 
-        nome_fazenda = simpledialog.askstring("Entrada", "Digite o nome da fazenda:")
-        largura_str = simpledialog.askstring("Entrada", "Digite a largura do implemento (m):")
+        nome_fazenda = simpledialog.askstring("Entrada", "Digite o nome da fazenda:", parent=root)
+        largura_str = simpledialog.askstring("Entrada", "Digite a largura do implemento (m):", parent=root)
 
         try:
             largura = float(largura_str)
