@@ -67,10 +67,10 @@ def mostrar_resumo_fazendas(screen, clock):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONUP:
                 if btn_continuar.handle_event(event):
                     running = False
-            elif event.type == pygame.MOUSEBUTTONUP:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 btn_continuar.handle_event(event)
             elif event.type == pygame.MOUSEMOTION:
                 btn_continuar.handle_event(event)
