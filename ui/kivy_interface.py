@@ -22,6 +22,9 @@ class GPSInterface(BoxLayout):
         super().__init__(**kwargs)
         self.orientation = 'vertical'
 
+        from kivy.core.window import Window
+        Window.fullscreen = 'auto'
+
         # Main content area with map and side controls
         main_area = BoxLayout(orientation='horizontal', size_hint_y=0.85)
 

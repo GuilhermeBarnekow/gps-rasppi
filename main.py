@@ -73,6 +73,17 @@ from ui.kivy_interface import GPSApp
 import sys
 
 def main():
+    # Initialize pygame
+    pygame.init()
+    screen = pygame.display.set_mode((840, 480))
+    clock = pygame.time.Clock()
+
+    # Show initial farm summary screen
+    mostrar_resumo_fazendas(screen, clock)
+
+    # Quit pygame display before launching Kivy app
+    pygame.display.quit()
+
     # Launch the Kivy GPS app
     GPSApp().run()
 
