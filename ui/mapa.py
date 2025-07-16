@@ -205,8 +205,20 @@ class Mapa:
         clip_original = self.tela.get_clip()
         self.tela.set_clip(self.area_mapa)
         
-        # Fundo verde
+        # Fundo com padrão de grama
         pygame.draw.rect(self.tela, self.cor_fundo, self.area_mapa)
+        
+        # Desenhar padrão de grama (linhas pequenas aleatórias)
+        import random
+        for _ in range(300):
+            x = random.randint(self.area_mapa.left, self.area_mapa.right)
+            y = random.randint(self.area_mapa.top, self.area_mapa.bottom)
+            comprimento = random.randint(5, 10)
+            angulo = random.uniform(-0.5, 0.5)  # Pequeno ângulo para inclinação
+            x2 = x + comprimento * math.cos(angulo)
+            y2 = y + comprimento * math.sin(angulo)
+            cor_grama = (34, 139, 34)
+            pygame.draw.line(self.tela, cor_grama, (x, y), (x2, y2), 1)
         
         # Desenhar grid
         self.draw_grid()

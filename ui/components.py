@@ -45,7 +45,8 @@ class Button:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.pressed = True
-                return True
+                # Do not return True here to avoid double toggle
+                return False
         elif event.type == pygame.MOUSEBUTTONUP:
             if self.pressed and self.rect.collidepoint(event.pos):
                 self.pressed = False

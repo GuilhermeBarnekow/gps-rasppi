@@ -13,6 +13,76 @@ from utils.exportacao import ExportadorDados
 import db
 from utils.detect_gps_port import detectar_porta_gps
 
+import pygame
+import sys
+import time
+from ui.mapa import Mapa
+from ui.widgets import HUD
+from ui.components import Colors, Button
+from gnss import GNSSManager
+from utils.area_calc import calcular_area
+from utils.haversine import haversine
+from utils.velocimetro import Velocimetro
+from utils.exportacao import ExportadorDados
+import db
+from utils.detect_gps_port import detectar_porta_gps
+
+def mostrar_resumo_fazendas(screen, clock):
+    """Mostra a tela de resumo das fazendas registradas antes da interface principal"""
+    font_titulo = pygame.font.Font(None, 48)
+    font_texto = pygame.font.Font(None, 32)
+    largura_tela, altura_tela = screen.get_size()
+    
+    # Botão para continuar
+    btn_continuar = Button((largura_tela//2 - 100, altura_tela - 80, 200, 50), "Continuar", Colors.SECONDARY)
+    
+    # Obter fazendas e hectares percorridos do banco
+    fazendas = db.obter_fazendas()  # Supondo que retorna lista de dicts com 'nome' e 'hectares'
+    if not fazendas:
+        fazendas = []
+    
+    running = True
+    while running:
+        screen.fill(Colors.BG_DARK)
+        
+        # Título
+        titulo_surface = font_titulo.render("Fazendas Registradas", True, Colors.TEXT_PRIMARY)
+        titulo_rect = titulo_surface.get_rect(center=(largura_tela//2, 50))
+        screen.blit(titulo_surface, titulo_rect)
+        
+        # Listar fazendas
+        y_offset = 120
+        for fazenda in fazendas:
+            nome = fazenda.get('nome', 'Desconhecida')
+            hectares = fazenda.get('hectares', 0.0)
+            texto = f"{nome} - {hectares:.2f} ha percorridos"
+            texto_surface = font_texto.render(texto, True, Colors.TEXT_SECONDARY)
+            texto_rect = texto_surface.get_rect(center=(largura_tela//2, y_offset))
+            screen.blit(texto_surface, texto_rect)
+            y_offset += 40
+        
+        # Desenhar botão continuar
+        btn_continuar.draw(screen)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if btn_continuar.handle_event(event):
+                    running = False
+            elif event.type == pygame.MOUSEBUTTONUP:
+                btn_continuar.handle_event(event)
+            elif event.type == pygame.MOUSEMOTION:
+                btn_continuar.handle_event(event)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+        
+        pygame.display.flip()
+        clock.tick(30)
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((800, 480), pygame.FULLSCREEN)
@@ -21,6 +91,9 @@ def main():
 
     # Setup database
     db.criar_banco()
+
+    # Mostrar resumo das fazendas antes da interface principal
+    mostrar_resumo_fazendas(screen, clock)
 
     # Obter informações da fazenda
     fazenda = db.obter_fazenda()
