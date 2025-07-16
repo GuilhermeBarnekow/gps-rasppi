@@ -56,3 +56,11 @@ def obter_pontos():
     rows = cur.fetchall()
     conn.close()
     return rows
+
+def obter_hectares_totais():
+    conn = sqlite3.connect('pulverizacao.db')
+    cur = conn.cursor()
+    cur.execute('SELECT SUM(hectares) FROM pontos')
+    total = cur.fetchone()[0]
+    conn.close()
+    return total if total else 0.0

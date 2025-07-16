@@ -28,7 +28,7 @@ import db
 from utils.detect_gps_port import detectar_porta_gps
 
 def mostrar_resumo_fazendas(screen, clock):
-    """Mostra a tela de resumo das fazendas registradas antes da interface principal"""
+    """Mostra a tela de resumo da fazenda registrada antes da interface principal"""
     font_titulo = pygame.font.Font(None, 48)
     font_texto = pygame.font.Font(None, 32)
     largura_tela, altura_tela = screen.get_size()
@@ -36,30 +36,29 @@ def mostrar_resumo_fazendas(screen, clock):
     # Botão para continuar
     btn_continuar = Button((largura_tela//2 - 100, altura_tela - 80, 200, 50), "Continuar", Colors.SECONDARY)
     
-    # Obter fazendas e hectares percorridos do banco
-    fazendas = db.obter_fazendas()  # Supondo que retorna lista de dicts com 'nome' e 'hectares'
-    if not fazendas:
-        fazendas = []
+    # Obter fazenda e hectares percorridos do banco
+    fazenda = db.obter_fazenda()
+    hectares_totais = db.obter_hectares_totais()
     
     running = True
     while running:
         screen.fill(Colors.BG_DARK)
         
         # Título
-        titulo_surface = font_titulo.render("Fazendas Registradas", True, Colors.TEXT_PRIMARY)
+        titulo_surface = font_titulo.render("Fazenda Registrada", True, Colors.TEXT_PRIMARY)
         titulo_rect = titulo_surface.get_rect(center=(largura_tela//2, 50))
         screen.blit(titulo_surface, titulo_rect)
         
-        # Listar fazendas
+        # Mostrar dados da fazenda
         y_offset = 120
-        for fazenda in fazendas:
+        if fazenda:
             nome = fazenda.get('nome', 'Desconhecida')
-            hectares = fazenda.get('hectares', 0.0)
-            texto = f"{nome} - {hectares:.2f} ha percorridos"
-            texto_surface = font_texto.render(texto, True, Colors.TEXT_SECONDARY)
-            texto_rect = texto_surface.get_rect(center=(largura_tela//2, y_offset))
-            screen.blit(texto_surface, texto_rect)
-            y_offset += 40
+            texto = f"{nome} - {hectares_totais:.2f} ha percorridos"
+        else:
+            texto = "Nenhuma fazenda registrada"
+        texto_surface = font_texto.render(texto, True, Colors.TEXT_SECONDARY)
+        texto_rect = texto_surface.get_rect(center=(largura_tela//2, y_offset))
+        screen.blit(texto_surface, texto_rect)
         
         # Desenhar botão continuar
         btn_continuar.draw(screen)
