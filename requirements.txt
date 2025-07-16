@@ -1,3 +1,3 @@
-pygame==2.5.2
+kivy
 pyserial==3.5
 pynmea2==1.18.0
