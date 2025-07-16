@@ -77,8 +77,25 @@ class HUD:
         
     def draw(self):
         """Desenha o HUD"""
-        # Desenhar painel lateral
-        self.painel_lateral.draw(self.screen)
+        # Desenhar painel lateral com sombra e transparência
+        shadow_rect = self.painel_lateral.rect.copy()
+        shadow_rect.x += 4
+        shadow_rect.y += 4
+        shadow_surf = pygame.Surface((shadow_rect.width, shadow_rect.height), pygame.SRCALPHA)
+        pygame.draw.rect(shadow_surf, (0, 0, 0, 100), shadow_surf.get_rect(), border_radius=self.painel_lateral.border_radius)
+        self.screen.blit(shadow_surf, shadow_rect.topleft)
+        
+        # Painel com leve transparência
+        panel_surf = pygame.Surface((self.painel_lateral.rect.width, self.painel_lateral.rect.height), pygame.SRCALPHA)
+        panel_color = (*self.painel_lateral.bg_color, 220) if len(self.painel_lateral.bg_color) == 3 else self.painel_lateral.bg_color
+        pygame.draw.rect(panel_surf, panel_color, panel_surf.get_rect(), border_radius=self.painel_lateral.border_radius)
+        self.screen.blit(panel_surf, self.painel_lateral.rect.topleft)
+        
+        # Desenhar título
+        if self.painel_lateral.title:
+            title_surface = self.painel_lateral.title_font.render(self.painel_lateral.title, True, self.painel_lateral.title_color)
+            title_rect = title_surface.get_rect(centerx=self.painel_lateral.rect.centerx, y=self.painel_lateral.rect.y + self.painel_lateral.padding)
+            self.screen.blit(title_surface, title_rect)
         
         # Desenhar métricas
         self.metric_pontos.draw(self.screen)
@@ -87,10 +104,18 @@ class HUD:
         self.metric_velocidade.draw(self.screen)
         self.metric_tempo.draw(self.screen)
         
-        # Desenhar botões
-        self.btn_iniciar.draw(self.screen)
-        self.btn_exportar.draw(self.screen)
-        self.btn_limpar.draw(self.screen)
+        # Desenhar botões com efeitos de hover e pressed
+        for btn in [self.btn_iniciar, self.btn_exportar, self.btn_limpar]:
+            # Ajustar cor para hover e pressed
+            if not btn.enabled:
+                btn.color = btn.disabled_color
+            elif btn.pressed:
+                btn.color = btn.pressed_color
+            elif btn.hover:
+                btn.color = btn.hover_color
+            else:
+                btn.color = btn.base_color
+            btn.draw(self.screen)
         
     def pode_iniciar_rota(self, largura):
         """Verifica se pode iniciar a rota"""

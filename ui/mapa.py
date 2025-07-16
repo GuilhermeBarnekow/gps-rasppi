@@ -161,6 +161,50 @@ class Mapa:
         # Desenhar círculo ao redor para melhor visibilidade
         pygame.draw.circle(self.tela, self.cor_trator, (int(x), int(y)), tamanho + 2, 2)
 
+    def draw_trator(self):
+        """Desenha o trator na posição atual"""
+        if not self.posicao_atual:
+            return
+            
+        x, y = self.sistema_coords.gps_para_pixel(*self.posicao_atual)
+        
+        if not self.area_mapa.collidepoint(x, y):
+            return
+            
+        # Calcular direção
+        self.calcular_direcao()
+        
+        # Desenhar trator como triângulo orientado com sombra para profundidade
+        tamanho = 10
+        pontos = []
+        
+        # Pontos do triângulo (apontando para cima inicialmente)
+        triangulo = [
+            (0, -tamanho),    # Ponta
+            (-tamanho//2, tamanho//2),  # Esquerda
+            (tamanho//2, tamanho//2)    # Direita
+        ]
+        
+        # Rotacionar baseado na direção
+        cos_a = math.cos(self.direcao_atual)
+        sin_a = math.sin(self.direcao_atual)
+        
+        for px, py in triangulo:
+            nx = px * cos_a - py * sin_a
+            ny = px * sin_a + py * cos_a
+            pontos.append((x + nx, y + ny))
+            
+        # Desenhar sombra do trator
+        sombra_offset = 3
+        pontos_sombra = [(px + sombra_offset, py + sombra_offset) for px, py in pontos]
+        pygame.draw.polygon(self.tela, (0, 0, 0, 100), pontos_sombra)
+        
+        # Desenhar trator
+        pygame.draw.polygon(self.tela, self.cor_trator, pontos)
+        
+        # Desenhar círculo ao redor para melhor visibilidade
+        pygame.draw.circle(self.tela, self.cor_trator, (int(x), int(y)), tamanho + 3, 3)
+
     def draw_escala(self):
         """Desenha escala do mapa"""
         escala = self.sistema_coords.obter_escala_metros()
@@ -205,20 +249,31 @@ class Mapa:
         clip_original = self.tela.get_clip()
         self.tela.set_clip(self.area_mapa)
         
-        # Fundo com padrão de grama
-        pygame.draw.rect(self.tela, self.cor_fundo, self.area_mapa)
+        # Fundo com gradiente de verde para simular terreno mais natural
+        altura = self.area_mapa.height
+        largura = self.area_mapa.width
+        for y in range(self.area_mapa.top, self.area_mapa.bottom):
+            # Gradiente vertical de verde escuro para verde claro
+            r = int(34 + (y - self.area_mapa.top) / altura * 40)
+            g = int(100 + (y - self.area_mapa.top) / altura * 80)
+            b = int(34 + (y - self.area_mapa.top) / altura * 20)
+            pygame.draw.line(self.tela, (r, g, b), (self.area_mapa.left, y), (self.area_mapa.right, y))
         
-        # Desenhar padrão de grama (linhas pequenas aleatórias)
+        # Desenhar padrão de grama com variação de cor e formas mais naturais
         import random
-        for _ in range(300):
+        for _ in range(400):
             x = random.randint(self.area_mapa.left, self.area_mapa.right)
             y = random.randint(self.area_mapa.top, self.area_mapa.bottom)
-            comprimento = random.randint(5, 10)
-            angulo = random.uniform(-0.5, 0.5)  # Pequeno ângulo para inclinação
+            comprimento = random.randint(6, 12)
+            angulo = random.uniform(-0.7, 0.7)  # Ângulo maior para variação
             x2 = x + comprimento * math.cos(angulo)
             y2 = y + comprimento * math.sin(angulo)
-            cor_grama = (34, 139, 34)
-            pygame.draw.line(self.tela, cor_grama, (x, y), (x2, y2), 1)
+            cor_grama = (
+                random.randint(30, 50),
+                random.randint(120, 160),
+                random.randint(30, 50)
+            )
+            pygame.draw.line(self.tela, cor_grama, (x, y), (x2, y2), 2)
         
         # Desenhar grid
         self.draw_grid()
