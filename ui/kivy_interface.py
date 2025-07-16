@@ -7,9 +7,38 @@ from kivy.uix.widget import Widget
 from kivy.uix.gridlayout import GridLayout
 from kivy.core.window import Window
 from kivy.properties import StringProperty
+from kivy.graphics import Color, Rectangle
 
 class MapArea(Widget):
-    pass  # Placeholder for map rendering
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.bind(pos=self.update_canvas, size=self.update_canvas)
+
+    def update_canvas(self, *args):
+        self.canvas.clear()
+        with self.canvas:
+            # Draw left blue area
+            Color(0.2, 0.4, 0.8, 1)  # blue
+            Rectangle(pos=self.pos, size=(self.width * 0.5, self.height))
+
+            # Draw right green area
+            Color(0.3, 0.6, 0.3, 1)  # green
+            Rectangle(pos=(self.x + self.width * 0.5, self.y), size=(self.width * 0.5, self.height))
+
+            # Draw yellow navigation triangle in center
+            Color(1, 1, 0, 1)  # yellow
+            center_x = self.x + self.width / 2
+            center_y = self.y + self.height / 2
+            size = min(self.width, self.height) * 0.1
+
+            # Triangle points (upward)
+            points = [
+                (center_x, center_y + size),
+                (center_x - size * 0.6, center_y - size * 0.6),
+                (center_x + size * 0.6, center_y - size * 0.6)
+            ]
+            from kivy.graphics import Triangle
+            Triangle(points=[p for point in points for p in point])
 
 class ControlButton(Button):
     pass
@@ -22,8 +51,11 @@ class GPSInterface(BoxLayout):
         super().__init__(**kwargs)
         self.orientation = 'vertical'
 
-        from kivy.core.window import Window
-        Window.fullscreen = 'auto'
+        # Set window to fullscreen - use 'auto' but fallback to False if issues
+        try:
+            Window.fullscreen = 'auto'
+        except Exception:
+            Window.fullscreen = False
 
         # Main content area with map and side controls
         main_area = BoxLayout(orientation='horizontal', size_hint_y=0.85)
@@ -71,7 +103,8 @@ class GPSInterface(BoxLayout):
 
 class GPSApp(App):
     def build(self):
-        Window.clearcolor = (0.1, 0.1, 0.1, 1)
+        # Set a lighter background color for better visibility
+        Window.clearcolor = (0.15, 0.15, 0.15, 1)
         return GPSInterface()
 
 if __name__ == '__main__':
