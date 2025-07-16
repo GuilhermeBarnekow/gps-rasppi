@@ -1,22 +1,9 @@
 import pygame
 import sys
 import time
-from ui.mapa import Mapa
-# Removed import of TecladoVirtual
-from ui.widgets import HUD
-from ui.components import Colors
-from gnss import GNSSManager
-from utils.area_calc import calcular_area
-from utils.haversine import haversine
-from utils.velocimetro import Velocimetro
-from utils.exportacao import ExportadorDados
-import db
-from utils.detect_gps_port import detectar_porta_gps
-
-import pygame
-import sys
+# Removed import of Mapa and TecladoVirtual
 import time
-from ui.mapa import Mapa
+
 from ui.widgets import HUD
 from ui.components import Colors, Button
 from gnss import GNSSManager
