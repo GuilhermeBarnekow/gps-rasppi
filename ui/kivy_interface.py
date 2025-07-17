@@ -15,6 +15,8 @@ from gnss_controller import GNSSController
 
 class MapArea(Widget):
     path_points = ListProperty([])  # List of (x, y) points where the triangle has passed
+    planned_route_points = ListProperty([])  # List of (x, y) points for planned route (green path)
+    passed_route_points = ListProperty([])  # List of (x, y) points passed on the planned route
     triangle_pos = ListProperty([0, 0])  # Current triangle position (world coordinates)
     triangle_size = ListProperty([0, 0])  # Size of the triangle
     implement_width = NumericProperty(10)  # largura do implemento em metros (default 10)
@@ -22,7 +24,7 @@ class MapArea(Widget):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.bind(pos=self.update_canvas, size=self.update_canvas, path_points=self.update_canvas, triangle_pos=self.update_canvas, implement_width=self.update_canvas, zoom_level=self.update_canvas)
+        self.bind(pos=self.update_canvas, size=self.update_canvas, path_points=self.update_canvas, planned_route_points=self.update_canvas, passed_route_points=self.update_canvas, triangle_pos=self.update_canvas, implement_width=self.update_canvas, zoom_level=self.update_canvas)
         self.triangle_size = [self.width * 0.1, self.height * 0.1]
 
     def update_canvas(self, *args):
@@ -31,21 +33,39 @@ class MapArea(Widget):
             # Fixar o triângulo no centro do widget
             cx, cy = self.center
 
-            # Desenhar terreno verde deslocado para simular movimento do triângulo
+            # Desenhar terreno verde fixo no centro do widget, ocupando toda a área
             Color(0.3, 0.6, 0.3, 1)  # green
-            # Calcular deslocamento do terreno baseado na posição do triângulo (world coordinates)
+            Rectangle(pos=self.pos, size=self.size)
+
+            # Calcular deslocamento para desenhar o caminho azul e simular movimento do terreno
             offset_x = cx - self.triangle_pos[0] * self.zoom_level
             offset_y = cy - self.triangle_pos[1] * self.zoom_level
-            Rectangle(pos=(self.x + offset_x, self.y + offset_y), size=self.size)
 
-            # Desenhar caminho azul deslocado
-            Color(0.2, 0.4, 0.8, 1)  # blue
+            # Desenhar rota planejada em verde
+            Color(0.2, 0.8, 0.2, 1)  # green
             half_width = (self.implement_width / 2) * self.zoom_level
-            for point in self.path_points:
+            for point in self.planned_route_points:
                 size = (half_width, half_width * 2)
                 px = self.x + offset_x + point[0] * self.zoom_level
                 py = self.y + offset_y + point[1] * self.zoom_level
                 Rectangle(pos=(px - size[0]/2, py - size[1]/2), size=size)
+
+            # Desenhar pontos da rota já passados em azul
+            Color(0.2, 0.4, 0.8, 1)  # blue
+            for point in self.passed_route_points:
+                size = (half_width, half_width * 2)
+                px = self.x + offset_x + point[0] * self.zoom_level
+                py = self.y + offset_y + point[1] * self.zoom_level
+                Rectangle(pos=(px - size[0]/2, py - size[1]/2), size=size)
+
+            # Desenhar caminho azul deslocado (pontos fora da rota planejada)
+            Color(0.2, 0.4, 0.8, 1)  # blue
+            for point in self.path_points:
+                if point not in self.passed_route_points:
+                    size = (half_width, half_width * 2)
+                    px = self.x + offset_x + point[0] * self.zoom_level
+                    py = self.y + offset_y + point[1] * self.zoom_level
+                    Rectangle(pos=(px - size[0]/2, py - size[1]/2), size=size)
 
             # Desenhar triângulo amarelo fixo no centro
             Color(1, 1, 0, 1)  # yellow
@@ -102,7 +122,6 @@ class GPSInterface(BoxLayout):
         btn_start = Button(text='Iniciar', size_hint_y=None, height=50)
         btn_pause = ToggleButton(text='Pause', size_hint_y=None, height=50)
         right_controls.add_widget(btn_start)
-        right_controls.add_widget(Widget())  # Spacer
         right_controls.add_widget(btn_pause)
 
         main_area.add_widget(left_controls)
