@@ -15,7 +15,7 @@ from gnss_controller import GNSSController
 
 class MapArea(Widget):
     path_points = ListProperty([])  # List of (x, y) points where the triangle has passed
-    triangle_pos = ListProperty([0, 0])  # Current triangle position
+    triangle_pos = ListProperty([0, 0])  # Current triangle position (world coordinates)
     triangle_size = ListProperty([0, 0])  # Size of the triangle
     implement_width = NumericProperty(10)  # largura do implemento em metros (default 10)
     zoom_level = NumericProperty(1.0)  # zoom do mapa, 1.0 = 100%
@@ -28,22 +28,27 @@ class MapArea(Widget):
     def update_canvas(self, *args):
         self.canvas.clear()
         with self.canvas:
-            # Draw terrain areas (initially empty, will fill blue where passed)
-            # Draw green area as default
-            Color(0.3, 0.6, 0.3, 1)  # green
-            Rectangle(pos=self.pos, size=self.size)
+            # Fixar o triângulo no centro do widget
+            cx, cy = self.center
 
-            # Draw blue path where triangle has passed, projetado linearmente com base na largura do implemento e zoom
+            # Desenhar terreno verde deslocado para simular movimento do triângulo
+            Color(0.3, 0.6, 0.3, 1)  # green
+            # Calcular deslocamento do terreno baseado na posição do triângulo (world coordinates)
+            offset_x = cx - self.triangle_pos[0] * self.zoom_level
+            offset_y = cy - self.triangle_pos[1] * self.zoom_level
+            Rectangle(pos=(self.x + offset_x, self.y + offset_y), size=self.size)
+
+            # Desenhar caminho azul deslocado
             Color(0.2, 0.4, 0.8, 1)  # blue
             half_width = (self.implement_width / 2) * self.zoom_level
             for point in self.path_points:
-                # Desenhar retângulo azul com largura proporcional ao implemento
                 size = (half_width, half_width * 2)
-                Rectangle(pos=(point[0] - size[0]/2, point[1] - size[1]/2), size=size)
+                px = self.x + offset_x + point[0] * self.zoom_level
+                py = self.y + offset_y + point[1] * self.zoom_level
+                Rectangle(pos=(px - size[0]/2, py - size[1]/2), size=size)
 
-            # Draw yellow navigation triangle at current position
+            # Desenhar triângulo amarelo fixo no centro
             Color(1, 1, 0, 1)  # yellow
-            cx, cy = self.triangle_pos
             size = min(self.width, self.height) * 0.1 * self.zoom_level
             points = [
                 (cx, cy + size),
